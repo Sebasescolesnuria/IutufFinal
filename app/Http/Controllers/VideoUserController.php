@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Video;
 use App\Models\User;
+use App\Models\Comment;
+use App\Models\Puntuaciones;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -33,7 +35,7 @@ class VideoUserController extends Controller
      */
     public function create()
     {
-        //
+        return view('videos.create');
     }
 
     public function upload()
@@ -49,19 +51,32 @@ class VideoUserController extends Controller
      */
     public function store(Request $request)
     {
-        $path=$request->file('video')->store('videos','public');
-        $iduser = Auth::user()->id;
-        Video::create([
-                        'description'=>$request->description,
-                        'cont'=>$request->cont,
-                        'title'=>$request->title,
-                        'video'=>$path,
-                        'create_date'=>$request->create_date,
-                        'modify_date'=>$request->modify_date,
-                        'userid'=>$iduser
+        if(Auth::user()->id == $request->id){
+            $user = User::find($request->id);
+            $updatedate = date('Y-m-d H:i:s');
+
+            $user->update([
+            'email'=>$request->email,
+            'username'=>$request->username,
+            'password'=>bcrypt($request->password),
+            'updated_at'=>$updatedate,
             ]);
-            $videos = Video::all();
-            return view('videos.index',compact('videos'));
+
+            Auth::logout();
+            return redirect()->route('index');
+        }
+        else{
+            $user = User::find($request->id);
+            $updatedate = date('Y-m-d H:i:s');
+            $user->update([
+            'email'=>$request->email,
+            'username'=>$request->username,
+            'updated_at'=>$updatedate,
+            'rol'=>$request->rol
+            ]);
+
+            return redirect()->route('perfil');
+        }
     }
 
     /**
@@ -70,11 +85,12 @@ class VideoUserController extends Controller
      * @param  \App\Models\Video  $video
      * @return \Illuminate\Http\Response
      */
-    public function show()
+    public function show($id)
     {
-        $videos = Video::all();
-        return view('videos.show',compact('videos'));
+        $user = User::find($id);
+        return view('videos.edituserinfo',compact('user'));
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -96,14 +112,14 @@ class VideoUserController extends Controller
      * @param  \App\Models\Video  $video
      * @return \Illuminate\Http\Response
      */
+
     public function update(Request $request, $id)
     {
-        $video=Video::find($id);
+        $video = Video::find($id);
         $video->update([
         'description'=>$request->description,
         'cont'=>$request->cont,
         'title'=>$request->title,
-        'video'=>$request->video,
         'created_at'=>$request->created_at,
         'updated_at'=>$request->updated_at,
         'userid'=>$request->userid
@@ -118,11 +134,15 @@ class VideoUserController extends Controller
      * @param  \App\Models\Video  $video
      * @return \Illuminate\Http\Response
      */
+
     public function destroy($id)
     {
-        $video = Video::find($id);
-        Video::where('id',$video)->delete();
-        $videos = Video::all();
-        return view('videos.index',compact('videos'));
+        $comment = Comment::where('id',$id);
+        $comment->delete();
+        return redirect()->route('index');
+    }
+
+    public function showusers(){
+        $allusers = User::all();
     }
 }

@@ -1,3 +1,7 @@
+<?php
+use Illuminate\Support\Facades\Auth;
+?>
+
 @extends('layouts.app')
 
 @section('content')
@@ -5,10 +9,6 @@
 
         <h1 class="my-4">Your Info</h1>
         <div style="width:100%;display:flex;flex-direction:column;">
-            <div style="width:100%;display:flex;flex-direction:row;">
-                <p style="width:50%;">Your id</p>
-                <p style="width:50%;">{{$id}}</p>
-            </div>
             <div style="width:100%;display:flex;flex-direction:row;">
                 <p style="width:50%;">Your email</p>
                 <p style="width:50%;">{{$email}}</p>
@@ -22,7 +22,6 @@
                 <p style="width:50%;">{{$role}}</p>
             </div>
         </div>
-        <a class="btn btn-primary" href="{{route('edituserinfo')}}">Edit</a>
         <h1 class="my-4">Your Videos</h1>
         <table class="table">
             <thead>
@@ -42,11 +41,38 @@
                     <td>@if($video->video!=null)<video src="{{asset('storage/'.$video->video)}}" width="150px" height="150px" controls>@endif</td>
                     <td>{{$video->created_at}}</td>
                     <td>{{$video->updated_at}}</td>
+                    <td><a class="btn btn-dark" href="{{route('video.show',$video->id)}}">View</a></td></td>
                     <td><a class="btn btn-primary" href="{{route('video.edit',$video->id)}}">Edit</a></td>
                 </tr>
             @endforeach
             </thead>
         </table>
+        @if($role == 'admin')
+        <h1 class="my-4">Users</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Creation Date</th>
+                    <th>Update Date</th>
+                    <th>Rol</th>
+                </tr>
+            @foreach($user as $users)
+                <tr>
+                    <td>{{$users->id}}</td>
+                    <td>{{$users->username}}</td>
+                    <td>{{$users->email}}</td>
+                    <td>{{$users->created_at}}</td>
+                    <td>{{$users->updated_at}}</td>
+                    <td>{{$users->rol}}</td>
+                    <td><a class="btn btn-primary" href="{{route('videouser.show',$users->id)}}">Edit</a></td>
+                </tr>
+            @endforeach
+            </thead>
+        </table>
+        @endif
     <br/>
     </div>
 

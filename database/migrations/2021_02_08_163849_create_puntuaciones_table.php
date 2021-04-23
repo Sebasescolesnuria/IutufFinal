@@ -15,7 +15,7 @@ class CreatePuntuacionesTable extends Migration
     {
         Schema::create('puntuaciones', function (Blueprint $table) {
             $table->id();
-            $table->integer('pnum')->nullable();
+            $table->boolean('puntuacion');
             $table->timestamps();
             $table->unsignedBigInteger('videoid');
             $table->unsignedBigInteger('userid');

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Video;
 use App\Models\User;
+use App\Models\Comment;
+use App\Models\Puntuaciones;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -49,8 +51,17 @@ class VideoController extends Controller
         $role = Auth::user()->rol;
         $name = Auth::user()->username;
         $role = DB::table('roles')->select('rol')->where('id',$role)->get();
+
+        if(strpos($role,'admin')){
+            $role = 'admin';
+        }
+        else{
+            $role = 'guest';
+        }
+
         $videos = Video::all()->where('userid',$id);
-        return view('videos.perfil',compact('videos','id','email','name','role'));
+        $user = User::all();
+        return view('videos.perfil',compact('videos','id','email','name','role','user'));
     }
 
     /**
@@ -82,11 +93,6 @@ class VideoController extends Controller
      * @param  \App\Models\Video  $video
      * @return \Illuminate\Http\Response
      */
-    public function show()
-    {
-        //$videos = Video::all();
-        //return view('videos.show',compact('videos'));
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -111,12 +117,11 @@ class VideoController extends Controller
     public function update(Request $request, $id)
     {
         $userid = Auth::user()->id;
-        $video=Video::find($id);
+        $video = Video::find($id);
         $video->update([
         'description'=>$request->description,
         'cont'=>$request->cont,
         'title'=>$request->title,
-        'video'=>$request->video,
         'created_at'=>$request->created_at,
         'updated_at'=>$request->updated_at,
         'userid'=>$userid
@@ -125,31 +130,54 @@ class VideoController extends Controller
         return view('videos.index',compact('videos'));
     }
 
-    public function updateinfo(Request $request)
+    public function show($id)
     {
-        $id = Auth::user()->id;
-        $rol = Auth::user()->rol;
-        $createdate = Auth::user()->created_at;
-        $user = User::find($id);
-        $updatedate = date('Y-m-d H:i:s');
-        $user->update([
-        'id'=>$request->id,
-        'email'=>$request->email,
-        'username'=>$request->username,
-        'password'=>bcrypt($request->password),
-        'created_at'=>$createdate,
-        'updated_at'=>$updatedate,
-        'rol'=>$rol
-        ]);
+        $user = Auth::user()->id;
+        $video = Video::find($id);
+        $puntuaciones = Puntuaciones::all()->where('videoid',$id)->where('userid',$user);
+        $puntuaciones = count($puntuaciones);
+        $comments = Comment::all()->where('videoid',$id);
+        $users = User::all();
 
-        Auth::logout();
+        return view('videos.show',compact('video','comments','puntuaciones'));
+    }
+
+    public function insertcomments(Request $request){
+        $created_at = date('Y-m-d H:i:s');
+        $upated_at = date('Y-m-d H:i:s');
+        $user = Auth::user()->id;
+
+        Comment::create([
+            'comment'=>$request->comment,
+            'userid'=>$user,
+            'videoid'=>$request->videoid,
+            'created_at'=>$created_at,
+            'updated_at'=>$upated_at
+        ]);
         return redirect()->route('index');
     }
 
-    public function edituserinfo()
-    {
-        $user = Auth::user();
-        return view('videos.edituserinfo',compact('user'));
+    public function insertpuntuaciones(Request $request){
+        if($request->megusta){
+            $puntuacion = true;
+        }
+        else{
+            $puntuacion = false;
+        }
+
+        $user = Auth::user()->id;
+        $created_at = date('Y-m-d H:i:s');
+        $updated_at = date('Y-m-d H:i:s');
+        $user = Auth::user()->id;
+
+        Puntuaciones::create([
+            'puntuacion'=>$puntuacion,
+            'created_at'=>$created_at,
+            'updated_at'=>$updated_at,
+            'videoid'=>$request->videoid,
+            'userid'=>$user
+        ]);
+        return redirect()->route('index');
     }
 
     /**
@@ -161,6 +189,10 @@ class VideoController extends Controller
     public function destroy($id)
     {
         $video = Video::where('id',$id);
+        $comments = Comment::where('videoid',$id);
+        $puntuaciones = Puntuaciones::where('videoid',$id);
+        $comments->delete();
+        $puntuaciones->delete();
         $video->delete();
         return redirect()->route('index');
     }

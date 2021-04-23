@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
                     <th>updated_at</th>
                     <th>Userid</th>
                     <th></th>
+                    <th></th>
                 </tr>
             @foreach($videos as $video)
                 <tr>
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Auth;
                     <td>{{$video->created_at}}</td>
                     <td>{{$video->updated_at}}</td>
                     <td>{{$video->userid}}</td>
+                    <td><a class="btn btn-dark" href="{{route('video.show',$video->id)}}">View</a></td>
                     @if($video->userid == Auth::user()->id && Auth::user()->hasRole('user'))<td><a class="btn btn-primary" href="{{route('video.edit',$video->id)}}">Edit</a></td>@endif
                     @if(Auth::user()->hasRole('admin'))<td><a class="btn btn-primary" href="{{route('videouser.edit',$video->id)}}">Edit</a></td>@endif
                 </tr>

@@ -19,23 +19,17 @@
             Owner
             <br/>
             <input class="list-group" list="userid" name="userid" value="{{$video->userid}}">
-            @foreach($users as $user)
-                <datalist id="userid">
-                    <option value="{{$user->id}}">{{$user->email}}</option>
-                </datalist>
-            @endforeach
             <br/>
             <input type="submit" class="btn btn-primary" value="Save">
             <br/>
             <br>
         </form>
-            <form action="{{route('video.destroy',$video)}}" method="POST">
-                <input name="_method" type="hidden" value="Delete">
-                @csrf
-                <button>Remove</button>
-            </form>
-            <br/>
-
+        <form action="{{route('video.destroy',$video)}}" method="POST">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger">Remove</button>
+        </form>
+        <br/>
     <br/>
     </div>
 
